@@ -1,9 +1,9 @@
 import sys
-from MeidoPlugin import MeidoPlugin
+from meidobot.plugin import Plugin
 
 plugin_class = "SystemPlugin"
 
-class SystemPlugin(MeidoPlugin):
+class SystemPlugin(Plugin):
 	verbs = ['exit']
 	
 	def act(self, res, context = False):

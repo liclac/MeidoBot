@@ -1,17 +1,22 @@
-from MeidoMood import Emotion
+from meidobot.model import Emotion
 
-class MeidoUI(object):
+class UI(object):
 	currentEmotion = None
 	brain = None
 	
 	def __init__(self, brain):
 		self.brain = brain
+	def run(self):
+		pass
 	
 	def say(self, text): pass
 	def emotion(self, emotion):
 		self.currentEmotion = emotion
 
-class MeidoCLI(MeidoUI):
+class CLI(UI):
+	def run(self):
+		self.brain.respond(raw_input("> "))
+	
 	def say(self, text):
 		print text
 		

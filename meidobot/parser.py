@@ -1,7 +1,7 @@
 import string, json
 from pprint import pprint
 
-class MeidoParserResult(object):
+class ParserResult(object):
 	string = ""
 	words = {}
 	
@@ -12,7 +12,7 @@ class MeidoParserResult(object):
 	def __str__(self):
 		return "<\n\tMeidoParserResult of '%s':\n\t- W: { %s }\n\t- V: { %s }\n\t- O: { %s }\n\t- S: { %s }\n>" % (self.string, ', '.join(self.words), ', '.join(self.verbs), ', '.join(self.objects), ', '.join(self.subjects))
 
-class MeidoParser(object):
+class Parser(object):
 	brain = None
 	
 	verbs = {'look', 'check', 'exit'}
@@ -24,7 +24,7 @@ class MeidoParser(object):
 	
 	def parse(self, s):
 		'''Parses an input string and returns '''
-		res = MeidoParserResult()
+		res = ParserResult()
 		res.string = self.normalize(s)
 		res.words = set(res.string.split())
 		res.verbs = res.words & self.verbs

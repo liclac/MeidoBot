@@ -1,15 +1,20 @@
 import os
 from pprint import pprint
 from importlib import import_module
+from meidobot.parser import Parser
 
-class MeidoBrain(object):
+class Meido(object):
 	ui = None
 	parser = None
 	plugins = []
 	locked_context = None
+	running = False
 	
-	def load_plugins(self):
-		plugins_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'plugins')
+	def __init__(self):
+		self.parser = Parser(self)
+	
+	def load_plugins(self, path):
+		plugins_path = os.path.join(path, 'plugins')
 		plugins = [os.path.splitext(file)[0] for file in os.listdir(plugins_path)
 					if file.lower().endswith('.py') and not file.lower().startswith('_')]
 		for plugin in plugins:
@@ -22,6 +27,20 @@ class MeidoBrain(object):
 				continue
 			plug = getattr(mod, mod.plugin_class)(self)
 			self.plugins.append(plug)
+	
+	def run(self):
+		'''Runs a main loop'''
+		
+		if self.ui is None:
+			print "ERROR: No UI!"
+			return
+		
+		self.running = True
+		while self.running:
+			self.ui.run()
+	
+	def stop():
+		self.running = False
 			
 	def respond(self, string):
 		'''Takes an input string, parses it and acts upon it.'''
@@ -69,4 +88,4 @@ class MeidoBrain(object):
 		
 		self.locked_context = None
 		plugin.on_context_released()
-	
+		

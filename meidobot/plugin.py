@@ -1,4 +1,4 @@
-class MeidoPlugin(object):
+class Plugin(object):
 	brain = None
 	
 	verbs = []
@@ -34,4 +34,4 @@ class MeidoPlugin(object):
 		resources.
 		'''
 		pass
-	
+		
