@@ -19,6 +19,7 @@ class Plugin(object):
 		self.brain = brain
 	
 	def get_handlers(self, c):
+		'''Returns a list of all available handler functions.'''
 		# No, I have no idea why you'd ever want to act on a target, but why not.
 		handlers = []
 		for trigger in itertools.chain(c.actions, c.objects, c.targets):
@@ -27,6 +28,11 @@ class Plugin(object):
 		return handlers
 	
 	def act(self, c, context = False):
+		'''
+		Default handler if no handler matches.
+		All handlers should have this signature.
+		Return False to pass to the next handler.
+		'''
 		pass
 	
 	

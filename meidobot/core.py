@@ -69,14 +69,16 @@ class Meido(object):
 		
 		if self.locked_context is None:
 			for plugin in self.plugins:
-				has_hit = self.dispatch_plugin(plugin, self.make_command(plugin, string), False)
+				has_hit = self._dispatch_plugin(plugin, self._make_command(plugin, string), False)
 		else:
-			has_hit = self.dispatch_plugin(self.locked_context, self.make_command(self.locked_context, string), True)
+			has_hit = self._dispatch_plugin(self.locked_context, self._make_command(self.locked_context, string), True)
 		if not has_hit:
 			self.ui.say("I'm sorry, I'm not sure what you mean...")
 			
 	
-	def make_command(self, plugin, string):
+	def _make_command(self, plugin, string):
+		'''Creates a Command object from the given string and plugin.
+		Returns None if the given plugin can't handle the given string.'''
 		c = Command()
 		
 		attribs = ['actions', 'objects', 'targets']
@@ -93,7 +95,7 @@ class Meido(object):
 		if has_match: return c
 		else: return None
 	
-	def dispatch_plugin(self, plugin, c, locked_context = False):
+	def _dispatch_plugin(self, plugin, c, locked_context = False):
 		'''Dispatches the given command (c) to the given plugin.
 		Returns whether or not the plugin could actually handle it.
 		'''
@@ -111,6 +113,7 @@ class Meido(object):
 		return has_hit
 	
 	def get_config(self, key, default = None):
+		'''Returns the given configuration variable, or default.'''
 		try:
 			components = key.split('.')
 			lastobj = self.config[components[0]]
