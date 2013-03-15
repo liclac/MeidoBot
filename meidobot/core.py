@@ -59,7 +59,8 @@ class Meido(object):
 		while self.running:
 			self.ui.run()
 	
-	def stop():
+	def stop(self):
+		'''Stops a running main loop'''
 		self.running = False
 			
 	def respond(self, string):

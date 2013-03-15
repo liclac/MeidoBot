@@ -1,4 +1,3 @@
-import sys
 from meidobot.plugin import Plugin
 
 plugin_class = "SystemPlugin"
@@ -10,5 +9,5 @@ class SystemPlugin(Plugin):
 	}
 	
 	def do_exit(self, c, context = False):
-		sys.exit()
-		return True # This won't ever happen, but... consistency!
+		self.brain.stop()
+		return True
