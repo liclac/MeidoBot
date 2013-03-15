@@ -1,5 +1,6 @@
 import os
 import json
+import traceback
 from pprint import pprint
 from importlib import import_module
 from itertools import chain
@@ -38,7 +39,16 @@ class Meido(object):
 		plugins = [os.path.splitext(file)[0] for file in os.listdir(plugins_path)
 					if file.lower().endswith('.py') and not file.lower().startswith('_')]
 		for plugin in plugins:
-			mod = import_module('plugins.%s' % plugin)
+			try:
+				mod = import_module('plugins.%s' % plugin)
+			except Exception as e:
+				print "----------"
+				print "Couldn't load plugin: %s" % plugin
+				print " "
+				print traceback.format_exc()
+				print "----------"
+				continue
+			
 			if not hasattr(mod, 'plugin_class'):
 				print "Plugin %s has no 'plugin_class'!" % plugin
 				continue
