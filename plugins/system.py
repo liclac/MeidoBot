@@ -5,13 +5,10 @@ plugin_class = "SystemPlugin"
 
 class SystemPlugin(Plugin):
 	actions = ['exit']
+	handlers = {
+		'exit': 'do_exit'
+	}
 	
-	def act(self, c, context = False):
-		print vars(c)
-		return False
-	
-	#def act(self, c, context = False):
-	#	if 'exit' in c.actions: sys.exit()
-	#	else: return False
-	#	
-	#	return True
+	def do_exit(self, c, context = False):
+		sys.exit()
+		return True # This won't ever happen, but... consistency!

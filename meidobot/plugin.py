@@ -1,4 +1,5 @@
 import re
+import itertools
 from meidobot.core import Command
 
 class Plugin(object):
@@ -7,6 +8,7 @@ class Plugin(object):
 	actions = []
 	objects = []
 	targets = []
+	handlers = {}
 	
 	# If this is True, the plugin will receive ALL inputs
 	# If False, it will only receive inputs containing
@@ -15,6 +17,14 @@ class Plugin(object):
 	
 	def __init__(self, brain):
 		self.brain = brain
+	
+	def get_handlers(self, c):
+		# No, I have no idea why you'd ever want to act on a target, but why not.
+		handlers = []
+		for trigger in itertools.chain(c.actions, c.objects, c.targets):
+			if trigger in self.handlers:
+				handlers.append(getattr(self, self.handlers[trigger]))
+		return handlers
 	
 	def act(self, c, context = False):
 		pass

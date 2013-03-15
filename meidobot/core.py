@@ -65,32 +65,50 @@ class Meido(object):
 	def respond(self, string):
 		'''Takes an input string, parses it and acts upon it.'''
 		
-		if self.locked_context is not None:
-			c = self.locked_context.build_command(string)
-			self.locked_context.act(res, True)
+		has_hit = False
+		
+		if self.locked_context is None:
+			for plugin in self.plugins:
+				has_hit = self.dispatch_plugin(plugin, self.make_command(plugin, string), False)
 		else:
-			has_hit = False
+			has_hit = self.dispatch_plugin(self.locked_context, self.make_command(self.locked_context, string), True)
+		if not has_hit:
+			self.ui.say("I'm sorry, I'm not sure what you mean...")
 			
-			for plug in self.plugins:
-				actions = self.get_config('brain.default_actions', [])
-				objects = self.get_config('brain.default_objects', [])
-				targets = self.get_config('brain.default_targets', [])
-				
-				attribs = ['actions', 'objects', 'targets']
-				for attr in attribs:
-					
-				#for action in plug.actions:
-				#	truth = (action in string)
-				#	print "%r in %r = %r" % (action, string, truth)
-				#	if truth:
-				#		actions.append(action)
-				
-				c = Command(actions, objects, targets)
-				
-				has_hit = plug.act(c, False)
-				if has_hit: break
-			if not has_hit:
-				self.ui.say("I'm sorry, I'm not sure what you mean...")
+	
+	def make_command(self, plugin, string):
+		c = Command()
+		
+		attribs = ['actions', 'objects', 'targets']
+		has_match = False
+		for attr in attribs:
+			array = getattr(c, attr)
+			for phrase in getattr(plugin, attr):
+				if phrase in string:
+					array.append(phrase)
+					has_match = True
+			if has_match:
+				array.extend(self.get_config("brain.default_%s" % attr, []))
+		
+		if has_match: return c
+		else: return None
+	
+	def dispatch_plugin(self, plugin, c, locked_context = False):
+		'''Dispatches the given command (c) to the given plugin.
+		Returns whether or not the plugin could actually handle it.
+		'''
+		
+		if c is None:
+			return
+		
+		has_hit = False
+		handlers = plugin.get_handlers(c)
+		for handler in handlers:
+			has_hit = handler(c, locked_context)
+			if has_hit: break
+		if not has_hit:
+			has_hit = plugin.act(c, locked_context)
+		return has_hit
 	
 	def get_config(self, key, default = None):
 		try:
@@ -103,8 +121,7 @@ class Meido(object):
 			return default
 	
 	def lock_context(self, plugin):
-		'''
-		Locks the context, making sure only the given plugin
+		'''Locks the context, making sure only the given plugin
 		gets to act. This gives plugins the ability to act 
 		on arbitrary input without using keywords.
 		'''
