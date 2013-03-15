@@ -2,7 +2,7 @@ import threading
 from functools import wraps
 from time import sleep
 
-def _f_thread(f, *args, **kwargs):
+def __f_thread(f, *args, **kwargs):
 	def run():
 		f(*args, **kwargs)
 	t = threading.Thread(target=run)
@@ -13,7 +13,7 @@ def async(f):
 	Asynchronous functions cannot return a value.'''
 	@wraps(f)
 	def wrapper(*args, **kwargs):
-		t = _f_thread(f, *args, **kwargs)
+		t = __f_thread(f, *args, **kwargs)
 		t.start()
 		return t
 	
@@ -26,7 +26,7 @@ def daemon(f):
 	Asynchronous functions cannot return a value.'''
 	@wraps(f)
 	def wrapper(*args, **kwargs):
-		t = _f_thread(f, *args, **kwargs)
+		t = __f_thread(f, *args, **kwargs)
 		t.daemon = True
 		t.start()
 		return t
