@@ -1,24 +1,25 @@
+import re
+from meidobot.core import Command
+
 class Plugin(object):
 	brain = None
 	
-	verbs = []
+	actions = []
 	objects = []
-	subjects = []
+	targets = []
+	
+	# If this is True, the plugin will receive ALL inputs
+	# If False, it will only receive inputs containing
+	# Actions or Objects it recognizes
+	acts_on_everything = False
 	
 	def __init__(self, brain):
 		self.brain = brain
 	
-	def act(self, res, context = False):
-		'''
-		Your plugin should override this function to react
-		to user input. This function will get called regardless of
-		the presence of keywords in the string.
-		
-		Arguments:
-			res		-- a MeidoParserResult of the input string
-			context	-- True if this is called from the plugin's locked context
-		'''
+	def act(self, c, context = False):
 		pass
+	
+	
 	
 	def on_context_locked(self):
 		'''
@@ -27,6 +28,7 @@ class Plugin(object):
 		or lazy-loaded resources.
 		'''
 		pass
+	
 	def on_context_released(self):
 		'''
 		Called when the context is released from your plugin.
@@ -34,4 +36,4 @@ class Plugin(object):
 		resources.
 		'''
 		pass
-		
+	

@@ -2,6 +2,13 @@ import threading
 from functools import wraps
 from time import sleep
 
+def rgetattr(obj, attr, default = None):
+	if '.' not in attr:
+		return getattr(obj, attr, default)
+	else:
+		L = attr.split('.')
+		return rgetattr(getattr(obj, L[0], default), '.'.join(L[1:]))
+
 def __f_thread(f, *args, **kwargs):
 	def run():
 		f(*args, **kwargs)

@@ -1,0 +1,6 @@
+{
+	"brain": {
+		"default_targets": ["me", "my", "you", "your"],
+		"plugins_module": "plugins"
+	}
+}

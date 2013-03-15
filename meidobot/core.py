@@ -1,20 +1,40 @@
 import os
+import json
 from pprint import pprint
 from importlib import import_module
-from meidobot.parser import Parser
+from itertools import chain
+from meidobot.util import rgetattr
+#from meidobot.parser import Parser
+
+class Command(object):
+	actions = []
+	objects = []
+	targets = []
+	
+	def __init__(self, actions=[], objects=[], targets=[]):
+		self.actions = actions
+		self.objects = objects
+		self.targets = targets
 
 class Meido(object):
 	ui = None
-	parser = None
+	#parser = None
 	plugins = []
 	locked_context = None
 	running = False
 	
-	def __init__(self):
-		self.parser = Parser(self)
+	base_path = None
+	config_filename = None
+	config = {}
 	
-	def load_plugins(self, path):
-		plugins_path = os.path.join(path, 'plugins')
+	def __init__(self, base_path, config_filename):
+		self.base_path = base_path
+		self.config_filename = config_filename
+		with open(os.path.join(base_path, config_filename)) as f:
+			self.config = json.loads(f.read())
+	
+	def load_plugins(self):
+		plugins_path = os.path.join(self.base_path, self.get_config('brain.plugins_module', 'plugins'))
 		plugins = [os.path.splitext(file)[0] for file in os.listdir(plugins_path)
 					if file.lower().endswith('.py') and not file.lower().startswith('_')]
 		for plugin in plugins:
@@ -23,7 +43,7 @@ class Meido(object):
 				print "Plugin %s has no 'plugin_class'!" % plugin
 				continue
 			if not hasattr(mod, mod.plugin_class):
-				print "Plugin %s has no '%s' class!" % plugin_class
+				print "Plugin %s has no attribute named '%s'!" % (plugin, plugin_class)
 				continue
 			plug = getattr(mod, mod.plugin_class)(self)
 			self.plugins.append(plug)
@@ -44,20 +64,43 @@ class Meido(object):
 			
 	def respond(self, string):
 		'''Takes an input string, parses it and acts upon it.'''
-		data = self.parser.parse(string)
-		self.act(data)
-	
-	def act(self, res):
-		'''Acts upon the tagged data it receives.'''
 		
-		if self.locked_context != None:
+		if self.locked_context is not None:
+			c = self.locked_context.build_command(string)
 			self.locked_context.act(res, True)
 		else:
 			has_hit = False
+			
 			for plug in self.plugins:
-				plug.act(res, False)
+				actions = self.get_config('brain.default_actions', [])
+				objects = self.get_config('brain.default_objects', [])
+				targets = self.get_config('brain.default_targets', [])
+				
+				attribs = ['actions', 'objects', 'targets']
+				for attr in attribs:
+					
+				#for action in plug.actions:
+				#	truth = (action in string)
+				#	print "%r in %r = %r" % (action, string, truth)
+				#	if truth:
+				#		actions.append(action)
+				
+				c = Command(actions, objects, targets)
+				
+				has_hit = plug.act(c, False)
+				if has_hit: break
 			if not has_hit:
 				self.ui.say("I'm sorry, I'm not sure what you mean...")
+	
+	def get_config(self, key, default = None):
+		try:
+			components = key.split('.')
+			lastobj = self.config[components[0]]
+			for k in components[1:]:
+				lastobj = lastobj[k]
+			return lastobj
+		except KeyError:
+			return default
 	
 	def lock_context(self, plugin):
 		'''
