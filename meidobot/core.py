@@ -74,7 +74,7 @@ class Meido(object):
 		else:
 			has_hit = self._dispatch_plugin(self.locked_context, self._make_command(self.locked_context, string), True)
 		if not has_hit:
-			self.ui.say("I'm sorry, I'm not sure what you mean...")
+			self.ui.say(self.get_config("brain.fallback"))
 			
 	
 	def _make_command(self, plugin, string):
