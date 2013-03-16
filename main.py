@@ -1,6 +1,6 @@
 import sys, os
 from meidobot.core import Meido
-from meidobot.ui import CLI
+from meidobot.ui import *
 
 def main(argv):
 	brain = Meido(os.path.dirname(os.path.abspath(__file__)), 'config.json')
