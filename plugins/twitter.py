@@ -10,9 +10,6 @@ class TwitterPlugin(Plugin):
 		('monitor', 'watch', 'track', 'keep an eye on'): ('do_monitor', 1)
 	}
 	
-	def __init__(self, brain):
-		super(TwitterPlugin, self).__init__(brain)
-	
 	def interested(self, c):
 		# Only act on commands referring to Twitter
 		return ('twitter' in c.objects)
