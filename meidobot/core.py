@@ -4,17 +4,15 @@ import traceback
 from pprint import pprint
 from importlib import import_module
 from itertools import chain
+from operator import itemgetter
 from meidobot.util import normalize
 
 class Command(object):
-	actions = []
-	objects = []
-	targets = []
-	
-	def __init__(self, actions=[], objects=[], targets=[]):
-		self.actions = actions
-		self.objects = objects
-		self.targets = targets
+	def __init__(self, string):
+		self.string = string
+		self.actions = []
+		self.objects = []
+		self.targets = []
 
 class Meido(object):
 	ui = None
@@ -79,56 +77,41 @@ class Meido(object):
 		has_hit = False
 		
 		if self.locked_context is None:
-			for plugin in self.plugins:
-				has_hit = self._dispatch_plugin(plugin, self._make_command(plugin, string), False)
-				if has_hit:
-					break
+			has_hit = self._dispatch_plugins(self.plugins, string)
 		else:
-			has_hit = self._dispatch_plugin(self.locked_context, self._make_command(self.locked_context, string), True)
+			has_hit = self.locked_context.do_context(self._make_command(self.locked_context))
 		if not has_hit:
 			self.ui.say(self.get_config("brain.fallback"))
-			
 	
 	def _make_command(self, plugin, string):
-		'''Creates a Command object from the given string and plugin.
-		Returns None if the given plugin can't handle the given string.'''
-		c = Command()
-		
+		c = Command(string)
 		attribs = ['actions', 'objects', 'targets']
-		has_match = plugin.acts_on_everything
 		for attr in attribs:
-			array = getattr(c, attr)
-			for phrase in getattr(plugin, attr):
-				if phrase in string:
-					array.append(phrase)
-					has_match = True
-			if has_match:
-				array.extend(self.get_config("brain.default_%s" % attr, []))
-		
-		if has_match:
-			has_match = plugin.interested(c)
-		
-		if has_match:
-			return c
-		else:
-			return None
+			command_array = getattr(c, attr)
+			plugin_array = getattr(plugin, attr)
+			for trigger in plugin_array:
+				if trigger in string:
+					command_array.append(trigger)
+		return c
 	
-	def _dispatch_plugin(self, plugin, c, locked_context = False):
-		'''Dispatches the given command (c) to the given plugin.
-		Returns whether or not the plugin could actually handle it.
-		'''
-		
-		if c is None:
-			return False
-		#print "-> %s" % plugin.__class__.__name__
-		
+	def _get_handlers(self, plugins, string):
+		handlers = []
+		for plugin in plugins:
+			c = self._make_command(plugin, string)
+			interested = plugin.interested(c)
+			if interested:
+				for handler, weight in plugin.get_handlers(c):
+					handlers.append((handler, weight, c))
+		handlers.sort(key=itemgetter(1))
+		return handlers
+	
+	def _dispatch_plugins(self, plugins, string):
+		handlers = self._get_handlers(plugins, string)
 		has_hit = False
-		handlers = plugin.get_handlers(c)
-		for handler in handlers:
-			has_hit = handler(c, locked_context)
-			if has_hit: break
-		if not has_hit:
-			has_hit = plugin.act(c, locked_context)
+		for handler, weight, c in handlers:
+			has_hit = handler(c)
+			if has_hit:
+				break
 		return has_hit
 	
 	def get_config(self, key, default = None):

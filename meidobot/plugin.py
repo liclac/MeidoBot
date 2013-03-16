@@ -19,24 +19,35 @@ class Plugin(object):
 		self.brain = brain
 	
 	def interested(self, c):
-		return True
+		pairs = (
+					(self.actions, c.actions),
+					(self.objects, c.objects),
+					(self.targets, c.targets)
+		)
+		for pl, cl in pairs:
+			for item in pl:
+				if item in cl:
+					return True
+		return False
 	
 	def get_handlers(self, c):
-		'''Returns a list of all available handler functions.'''
-		# I have no idea why you'd ever want to act on a target, but why not.
-		handlers = []
-		for trigger in itertools.chain(c.actions, c.objects, c.targets):
-			if trigger in self.handlers:
-				handlers.append(getattr(self, self.handlers[trigger]))
-		return handlers
+		all_handlers = {}
+		chain = [x for x in itertools.chain(c.actions, c.objects, c.targets)]
+		for triggers, handler in self.handlers.iteritems():
+			if type(triggers) is str:
+				all_handlers[triggers] = handler
+			else:
+				for trigger in triggers:
+					all_handlers[trigger] = handler
+		handlers = [h for t, h in all_handlers.iteritems() if t in chain]
+		handlers.append(('do_fallback', -10))
+		return [(getattr(self, h), w) for h, w in handlers]
 	
-	def act(self, c, context = False):
-		'''
-		Default handler if no handler matches.
-		All handlers should have this signature.
-		Return False to pass to the next handler.
-		'''
-		pass
+	def do_context(self, c):
+		return False
+	
+	def do_fallback(self, c):
+		return False
 	
 	
 	
