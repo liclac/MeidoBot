@@ -39,11 +39,14 @@ class Meido(object):
 			try:
 				mod = import_module('plugins.%s' % plugin_name)
 			except Exception as e:
-				print "----------"
-				print "Couldn't load plugin: %s" % plugin_name
-				print " "
-				print traceback.format_exc()
-				print "----------"
+				if self.get_config("brain.debug_plugins", False):
+					print "----------"
+					print "Couldn't load plugin: %s" % plugin_name
+					print " "
+					print traceback.format_exc()
+					print "----------"
+				else:
+					print "Couldn't load plugin '%s': %s" % (plugin_name, e)
 				continue
 			
 			if not hasattr(mod, 'plugin_class'):

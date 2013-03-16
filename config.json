@@ -2,6 +2,7 @@
 	"brain": {
 		"default_targets": ["me", "my", "you", "your"],
 		"plugins_module": "plugins",
-		"fallback": "I'm sorry, I'm not sure what you mean..."
+		"fallback": "I'm sorry, I'm not sure what you mean...",
+		"debug_plugins": false
 	}
 }
