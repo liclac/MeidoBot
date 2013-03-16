@@ -4,8 +4,7 @@ import traceback
 from pprint import pprint
 from importlib import import_module
 from itertools import chain
-from meidobot.util import rgetattr
-#from meidobot.parser import Parser
+from meidobot.util import normalize
 
 class Command(object):
 	actions = []
@@ -76,6 +75,7 @@ class Meido(object):
 	def respond(self, string):
 		'''Takes an input string, parses it and acts upon it.'''
 		
+		string = normalize(string)
 		has_hit = False
 		
 		if self.locked_context is None:
@@ -120,6 +120,7 @@ class Meido(object):
 		
 		if c is None:
 			return False
+		#print "-> %s" % plugin.__class__.__name__
 		
 		has_hit = False
 		handlers = plugin.get_handlers(c)

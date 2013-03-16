@@ -1,4 +1,5 @@
 import threading
+import string
 from functools import wraps
 from time import sleep
 
@@ -59,9 +60,5 @@ class ticking(object):
 
 
 
-def rgetattr(obj, attr, default = None):
-	if '.' not in attr:
-		return getattr(obj, attr, default)
-	else:
-		L = attr.split('.')
-		return rgetattr(getattr(obj, L[0], default), '.'.join(L[1:]))
+def normalize(s):
+	return s.lower().translate(None, string.punctuation)
