@@ -64,14 +64,14 @@ class Meido(object):
 		if self.ui is None:
 			print "ERROR: No UI!"
 			return
-		
 		self.running = True
-		while self.running:
-			self.ui.run()
+		self.ui.run()
+		self.running = False
 	
 	def stop(self):
 		'''Stops a running main loop'''
 		self.running = False
+		self.ui.stop()
 			
 	def respond(self, string):
 		'''Takes an input string, parses it and acts upon it.'''
