@@ -27,6 +27,7 @@ Set `brain.debug_plugins` to true in config.json to get stack traces if somethin
 ```python
 from meidobot.plugin import Plugin
 
+# This variable is required
 plugin_class = "BombPlugin"
 
 class BombPlugin(Plugin):
