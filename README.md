@@ -26,7 +26,6 @@ Set `brain.debug_plugins` to true in config.json to get stack traces if somethin
 
 ```python
 from meidobot.plugin import Plugin
-from time import sleep
 
 plugin_class = "BombPlugin"
 
@@ -72,6 +71,8 @@ class BombPlugin(Plugin):
 		return False
 	
 	def do_blow_up(self, c):
+		from time import sleep
+
 		self.brain.ui.say("Initiating self-destruct sequence...")
 		sleep(1)
 		self.brain.ui.say("3...")
