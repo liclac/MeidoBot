@@ -22,7 +22,9 @@ Making plugins are easy! It does require a fair bit of boilerplate though, so he
 
 Create your plugin in plugins/ and it'll be picked up automatically.
 
-Set 'brain.debug_plugins' in config.json to true to get stack traces if something goes wrong when loading the plugin, such as syntax errors.
+Set `brain.debug_plugins` to true in config.json to get stack traces if something goes wrong when loading the plugin, such as syntax errors.
+
+```python
 
 	from meidobot.plugin import Plugin
 	from time import sleep
@@ -87,3 +89,4 @@ Set 'brain.debug_plugins' in config.json to true to get stack traces if somethin
 			
 			# This won't actually happen, but it's good practice regardless
 			return True
+```
