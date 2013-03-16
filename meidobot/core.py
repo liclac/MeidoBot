@@ -120,7 +120,6 @@ class Meido(object):
 		
 		if c is None:
 			return False
-		print "Dispatching to %s" % plugin.__class__.__name__
 		
 		has_hit = False
 		handlers = plugin.get_handlers(c)
