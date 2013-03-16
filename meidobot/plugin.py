@@ -18,9 +18,12 @@ class Plugin(object):
 	def __init__(self, brain):
 		self.brain = brain
 	
+	def interested(self, c):
+		return True
+	
 	def get_handlers(self, c):
 		'''Returns a list of all available handler functions.'''
-		# No, I have no idea why you'd ever want to act on a target, but why not.
+		# I have no idea why you'd ever want to act on a target, but why not.
 		handlers = []
 		for trigger in itertools.chain(c.actions, c.objects, c.targets):
 			if trigger in self.handlers:

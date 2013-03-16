@@ -38,25 +38,25 @@ class Meido(object):
 		plugins_path = os.path.join(self.base_path, self.get_config('brain.plugins_module', 'plugins'))
 		plugins = [os.path.splitext(file)[0] for file in os.listdir(plugins_path)
 					if file.lower().endswith('.py') and not file.lower().startswith('_')]
-		for plugin in plugins:
+		for plugin_name in plugins:
 			try:
-				mod = import_module('plugins.%s' % plugin)
+				mod = import_module('plugins.%s' % plugin_name)
 			except Exception as e:
 				print "----------"
-				print "Couldn't load plugin: %s" % plugin
+				print "Couldn't load plugin: %s" % plugin_name
 				print " "
 				print traceback.format_exc()
 				print "----------"
 				continue
 			
 			if not hasattr(mod, 'plugin_class'):
-				print "Plugin %s has no 'plugin_class'!" % plugin
+				print "Plugin %s has no 'plugin_class'!" % plugin_name
 				continue
 			if not hasattr(mod, mod.plugin_class):
-				print "Plugin %s has no attribute named '%s'!" % (plugin, plugin_class)
+				print "Plugin %s has no attribute named '%s'!" % (plugin_name, plugin_class)
 				continue
-			plug = getattr(mod, mod.plugin_class)(self)
-			self.plugins.append(plug)
+			plugin = getattr(mod, mod.plugin_class)(self)
+			self.plugins.append(plugin)
 	
 	def run(self):
 		'''Runs a main loop'''
@@ -95,7 +95,7 @@ class Meido(object):
 		c = Command()
 		
 		attribs = ['actions', 'objects', 'targets']
-		has_match = False
+		has_match = plugin.acts_on_everything
 		for attr in attribs:
 			array = getattr(c, attr)
 			for phrase in getattr(plugin, attr):
@@ -105,8 +105,13 @@ class Meido(object):
 			if has_match:
 				array.extend(self.get_config("brain.default_%s" % attr, []))
 		
-		if has_match: return c
-		else: return None
+		if has_match:
+			has_match = plugin.interested(c)
+		
+		if has_match:
+			return c
+		else:
+			return None
 	
 	def _dispatch_plugin(self, plugin, c, locked_context = False):
 		'''Dispatches the given command (c) to the given plugin.
@@ -114,7 +119,8 @@ class Meido(object):
 		'''
 		
 		if c is None:
-			return
+			return False
+		print "Dispatching to %s" % plugin.__class__.__name__
 		
 		has_hit = False
 		handlers = plugin.get_handlers(c)
