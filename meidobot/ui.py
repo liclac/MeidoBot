@@ -46,8 +46,8 @@ class UI(object):
 
 class CLI(UI):
 	def run(self):
+		super(CLI, self).run()
 		while self.running:
-			super(CLI, self).run()
 			for notification in self.notificationQueue:
 				print "-- %s --" % notification.title
 				print notification.text

@@ -81,6 +81,8 @@ class Meido(object):
 		if self.locked_context is None:
 			for plugin in self.plugins:
 				has_hit = self._dispatch_plugin(plugin, self._make_command(plugin, string), False)
+				if has_hit:
+					break
 		else:
 			has_hit = self._dispatch_plugin(self.locked_context, self._make_command(self.locked_context, string), True)
 		if not has_hit:
