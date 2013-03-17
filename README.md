@@ -16,6 +16,20 @@ Upcoming features
     * Email
     * Alarm/Reminders (once we have an UI)
 
+How to run the damn thing
+-------------------------
+First off, you need to install:
+
+* Python 2.7+ (not tested with 3.x)
+* PySide (without this, you'll get a text-based UI)
+    * If you get errors about missing libraries on install or launch, install Qt 4.8 too (uncheck the option to install documentation to save 250MB!)
+
+After that, you should be able to just double-click 'main.py' to run it.
+
+Failing that, try right-clicking it and selecting 'Run'.
+
+If there's no such thing either, open a terminal (/Applications/Utilities/Terminal.app on OSX, open the start menu and search for 'cmd' on Windows, location varies on Linux but it should be easy to find), type "python " (without the quotes), drop main.py into the window and press Enter.
+
 A sample plugin
 ---------------
 Making plugins are easy! It does require a fair bit of boilerplate though, so here's a sample plugin you can copypaste.
@@ -85,7 +99,7 @@ class BombPlugin(Plugin):
 		self.brain.ui.say("BOOM!")
 		
 		# Terminate gracefully. Rather than just exiting, we let the
-		# main loop finish and make sure to save data and such.
+		# main loop finish to make sure data is saved and such.
 		self.brain.stop()
 		
 		# This won't actually happen, but it's good practice regardless
