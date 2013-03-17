@@ -61,4 +61,4 @@ class ticking(object):
 
 
 def normalize(s):
-	return s.lower().translate(None, string.punctuation)
+	return s.lower()
