@@ -3,17 +3,86 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 from meidobot.ui.ui import UI
 
+class Bubble(QWidget):
+	opacity = 0.75
+	roundness = 10
+	color = QColor.fromRgb(255, 255, 255)
+	
+	def __init__(self, ui):
+		super(Bubble, self).__init__()
+		self.ui = ui
+		
+		print self.__class__.__name__
+		# All three are needed to get a transparent window
+		self.setStyleSheet("background:transparent;")
+		self.setAttribute(Qt.WA_TranslucentBackground)
+		self.setWindowFlags(Qt.FramelessWindowHint)
+		
+		self.setFocusPolicy(Qt.NoFocus)
+	
+	def paintEvent(self, event):
+		painter = QPainter(self)
+		painter.save()
+		
+		path = QPainterPath()
+		path.addRoundedRect(self.rect(), self.roundness, self.roundness)
+		painter.setClipPath(path)
+		
+		painter.setOpacity(self.opacity)
+		painter.fillPath(path, QBrush(self.color))
+		
+		painter.restore()
+	
+	def mousePressEvent(self, event):
+		self.ui.window.on_activate()
+
+class SpeechBubble(Bubble):
+	color = QColor.fromRgb(150, 150, 255)
+	
+	def __init__(self, text, ui):
+		super(SpeechBubble, self).__init__(ui)
+		
+		layout = QVBoxLayout()
+		layout.setContentsMargins(5, 5, 5, 5)
+		label = QLabel(self)
+		label.setText(text)
+		layout.addWidget(label)
+		self.setLayout(layout)
+
+class InputBubble(Bubble):
+	opacity = 1
+	ui = None
+	
+	def __init__(self, ui):
+		super(InputBubble, self).__init__(ui)
+		
+		layout = QVBoxLayout()
+		layout.setContentsMargins(5, 5, 5, 5)
+		
+		self.field = QLineEdit(self)
+		self.field.returnPressed.connect(self.on_return_pressed)
+		
+		layout.addWidget(self.field)
+		self.setLayout(layout)
+	
+	def on_return_pressed(self):
+		self.field.setReadOnly(True)
+		self.field.setFrame(False)
+		self.ui.respond(self.field.text())
+
 class MainWindow(QWidget):
 	brain = None
+	bubbles = []
 	
-	def __init__(self, brain, parent=None):
+	def __init__(self, ui, brain, parent=None):
 		super(MainWindow, self).__init__(parent)
+		self.ui = ui
 		self.brain = brain
 		
 		# All three are needed to get a transparent window
-		self.setStyleSheet("background:transparent;");
-		self.setAttribute(Qt.WA_TranslucentBackground);
-		self.setWindowFlags(Qt.FramelessWindowHint);
+		self.setStyleSheet("background:transparent;")
+		self.setAttribute(Qt.WA_TranslucentBackground)
+		self.setWindowFlags(Qt.FramelessWindowHint)
 		
 		screenSize = QDesktopWidget().availableGeometry()
 		windowSize = self.sizeHint()
@@ -21,6 +90,9 @@ class MainWindow(QWidget):
 		
 		self.setup()
 		self.createTrayIcon()
+	
+	def sizeHint(self):
+		return QSize(200, 200)
 	
 	def setup(self):
 		self.pixmap = QPixmap(os.path.join(self.brain.base_path, "resources/icon.png"))
@@ -43,19 +115,6 @@ class MainWindow(QWidget):
 		self.trayIcon.setContextMenu(self.trayMenu)
 		self.trayIcon.activated.connect(self.on_activate)
 		self.trayIcon.show()
-		
-		print self.trayIcon
-	
-	def on_activate(self):
-		print "Activate"
-		self.show()
-	
-	def on_deactivate(self):
-		print "Deactivate"
-		self.hide()
-	
-	def on_exit(self):
-		self.brain.stop()
 	
 	def mousePressEvent(self, event):
 		if event.buttons() == Qt.LeftButton:
@@ -66,19 +125,55 @@ class MainWindow(QWidget):
 			self.on_deactivate()
 			event.accept()
 	
-	def sizeHint(self):
-		return QSize(200, 200)
+	def on_activate(self):
+		print "Activate"
+		self.show()
+		for bubble in self.bubbles:
+			bubble.raise_()
+			bubble.setFocus()
+		if len(self.bubbles) == 0:# or type(self.bubbles[-1]) is not InputBubble:
+			self.push_bubble(InputBubble(self.ui))
+		self.bubbles[-1].raise_()
+		self.bubbles[-1].setFocus()
+	
+	def on_deactivate(self):
+		print "Deactivate"
+		
+		for bubble in self.bubbles:
+			bubble.deleteLater()
+		self.bubbles = []
+		
+		self.hide()
+	
+	def on_exit(self):
+		self.brain.stop()
+	
+	def push_bubble(self, bubble):
+		bubble.show()
+		bubble.move(self.pos().x() - bubble.size().width(), self.pos().y())
+		for old_bubble in self.bubbles:
+			old_bubble.move(old_bubble.pos().x(), old_bubble.pos().y() - bubble.size().height() - 10)
+		self.bubbles.append(bubble)
 
 class QtUI(UI):
 	def __init__(self, brain):
 		super(QtUI, self).__init__(brain)
 		
 		self.application = QApplication(sys.argv)
-		self.window = MainWindow(self.brain)
+		QApplication.setQuitOnLastWindowClosed(False)
+		self.window = MainWindow(self, self.brain)
 		
 	def run(self):
 		self.window.show()
+		self.window.push_bubble(InputBubble(self))
 		self.application.exec_()
 	
 	def stop(self):
 		self.application.exit()
+	
+	def say(self, text):
+		self.window.push_bubble(SpeechBubble(text, self))
+	
+	def respond(self, string):
+		self.brain.respond(string)
+		self.window.push_bubble(InputBubble(self))
