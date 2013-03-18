@@ -12,7 +12,7 @@ class Bubble(QWidget):
 		super(Bubble, self).__init__()
 		self.ui = ui
 		
-		print self.__class__.__name__
+		#print self.__class__.__name__
 		# All three are needed to get a transparent window
 		self.setStyleSheet("background:transparent;")
 		self.setAttribute(Qt.WA_TranslucentBackground)
@@ -35,6 +35,9 @@ class Bubble(QWidget):
 	
 	def mousePressEvent(self, event):
 		self.ui.window.on_activate()
+	
+	def __str__(self):
+		return "<%s>" % self.__class__.__name__
 
 class SpeechBubble(Bubble):
 	color = QColor.fromRgb(150, 150, 255)
@@ -44,10 +47,13 @@ class SpeechBubble(Bubble):
 		
 		layout = QVBoxLayout()
 		layout.setContentsMargins(5, 5, 5, 5)
-		label = QLabel(self)
-		label.setText(text)
-		layout.addWidget(label)
+		self.label = QLabel(self)
+		self.label.setText(text)
+		layout.addWidget(self.label)
 		self.setLayout(layout)
+	
+	def __str__(self):
+		return "<Speech Bubble: %s>" % self.label.text()
 
 class InputBubble(Bubble):
 	opacity = 1
@@ -69,6 +75,9 @@ class InputBubble(Bubble):
 		self.field.setReadOnly(True)
 		self.field.setFrame(False)
 		self.ui.respond(self.field.text())
+	
+	def __str__(self):
+		return "<Input Bubble>"
 
 class MainWindow(QWidget):
 	brain = None
@@ -105,9 +114,9 @@ class MainWindow(QWidget):
 		icon = QIcon(iconPath)
 		
 		self.trayMenu = QMenu(self)
-		self.trayMenu.addAction(QAction("&Appear", self, triggered=self.on_activate))
-		self.trayMenu.addAction(QAction("&Disappear", self, triggered=self.on_deactivate))
-		self.trayMenu.addSeparator()
+		#self.trayMenu.addAction(QAction("&Appear", self, triggered=self.on_activate))
+		#self.trayMenu.addAction(QAction("&Disappear", self, triggered=self.on_deactivate))
+		#self.trayMenu.addSeparator()
 		self.trayMenu.addAction(QAction("&Exit", self, triggered=self.on_exit))
 		
 		self.trayIcon = QSystemTrayIcon(self)
@@ -119,6 +128,7 @@ class MainWindow(QWidget):
 	def mousePressEvent(self, event):
 		if event.buttons() == Qt.LeftButton:
 			print "Left Click"
+			self.on_activate()
 			event.accept()
 		elif event.buttons() == Qt.RightButton:
 			print "Right Click"
@@ -128,9 +138,7 @@ class MainWindow(QWidget):
 	def on_activate(self):
 		print "Activate"
 		self.show()
-		for bubble in self.bubbles:
-			bubble.raise_()
-			bubble.setFocus()
+		self.clear_bubbles()
 		if len(self.bubbles) == 0:# or type(self.bubbles[-1]) is not InputBubble:
 			self.push_bubble(InputBubble(self.ui))
 		self.bubbles[-1].raise_()
@@ -140,20 +148,27 @@ class MainWindow(QWidget):
 		print "Deactivate"
 		
 		for bubble in self.bubbles:
+			print "- deleting %s" % bubble
 			bubble.deleteLater()
 		self.bubbles = []
 		
-		self.hide()
+		#self.hide()
 	
 	def on_exit(self):
 		self.brain.stop()
 	
 	def push_bubble(self, bubble):
+		print "Pushing %s" % bubble
 		bubble.show()
 		bubble.move(self.pos().x() - bubble.size().width(), self.pos().y())
 		for old_bubble in self.bubbles:
 			old_bubble.move(old_bubble.pos().x(), old_bubble.pos().y() - bubble.size().height() - 10)
 		self.bubbles.append(bubble)
+	def clear_bubbles(self):
+		for bubble in self.bubbles:
+			bubble.hide()
+			bubble.deleteLater()
+		self.bubbles = []
 
 class QtUI(UI):
 	def __init__(self, brain):
