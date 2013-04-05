@@ -9,12 +9,11 @@ This is still an alpha, so things will be buggy and change a lot. Still, feel fr
 
 Upcoming features
 -----------------
-* Proper UI! *(Okay, there is a TkInter UI, but it's horrible because TkInter)*
 * More Plugins!
     * Twitter
     * Heello
     * Email
-    * Alarm/Reminders (once we have an UI)
+    * Alarm/Reminders
 
 How to run the damn thing
 -------------------------
@@ -36,7 +35,7 @@ Making plugins are easy! It does require a fair bit of boilerplate though, so he
 
 Create your plugin in plugins/ and it'll be picked up automatically.
 
-Set `brain.debug_plugins` to true in config.json to get stack traces if something goes wrong when loading the plugin, such as syntax errors.
+Set `brain.debug_plugins` to true in config.json to get stack traces if something goes wrong when loading the plugin, such as syntax errors. Without this setting, you'll just get a short warning.
 
 ```python
 from meidobot.plugin import Plugin
